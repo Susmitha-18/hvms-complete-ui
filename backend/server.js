@@ -10,7 +10,7 @@ import connectDB from "./config/db.js";
 import apiRouter from "./routes/api.js";
 import mailRouter from "./routes/mailRoutes.js";
 import workerRoutes from "./routes/workerRoutes.js";
-import driverRoutes from "./routes/driverroutes.js";
+import driverRoutes from "./routes/driverRoutes.js";
 import vehicleRoutes from "./routes/vehicleroutes.js";
 import healthRouter from "./routes/health.js";
 import maintenanceRoutes from "./routes/maintenanceRoutes.js";
