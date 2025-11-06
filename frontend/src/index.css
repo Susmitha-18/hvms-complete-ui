@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+	--bg: #F3F4F6; /* gray-100 */
+	--panel: #F8FAFC; /* slightly lighter */
+	--muted: #6B7280; /* gray-500 */
+	--accent: #FDE68A; /* yellow-200 */
+	--accent-900: #111827; /* dark */
+	--card-shadow: 0 10px 30px rgba(16,24,40,0.06);
+}
+
+html, body, #root { height: 100%; }
+body { font-family: 'Poppins', sans-serif; background: var(--bg); }
+
+/* Reusable card */
+.card-shadow { box-shadow: var(--card-shadow); }
+.card { background: white; border-radius: 0.75rem; }
+
+/* Header tweaks */
+.app-header { background: var(--accent-900); color: white; }
+.nav-pill-active { background: var(--accent); color: #111827; }
+
+/* Map gradient used on the live tracking panel */
+.map-gradient { background: linear-gradient(90deg, rgba(240,252,255,1) 0%, rgba(238,252,242,1) 100%); border-radius: 0.5rem; }
+
+/* Small tag */
+.small-tag { font-size: 12px; padding: 0.25rem 0.5rem; border-radius: 0.375rem; }
+
+/* Controls / filters */
+.control { background: white; border: 1px solid rgba(15,23,42,0.06); padding: 0.75rem 1rem; border-radius: 0.5rem; }
+
+/* Status badges */
+.badge { font-size: 12px; padding: 0.25rem 0.6rem; border-radius: 0.5rem; }
+.badge-green { background: #ECFDF5; color: #065F46; }
+.badge-yellow { background: #FFFBEB; color: #78350F; }
+.badge-blue { background: #EFF6FF; color: #1E3A8A; }
+.badge-red { background: #FEF2F2; color: #7F1D1D; }
+
+/* Vehicle card specific */
+.vehicle-card { border-radius: 0.75rem; }
+.vehicle-actions .btn { background: var(--accent-900); color: white; border-radius: 0.5rem; }
+
+/* Misc */
+.muted { color: var(--muted); }
+
+/* frontend/src/index.css -- append these utilities */
+
+/* soft card shadow used for the UI */
+.card-shadow {
+  box-shadow: 0 8px 18px rgba(15, 15, 15, 0.06), 0 2px 6px rgba(15, 15, 15, 0.04);
+}
+
+/* HVMS brand yellow used in some early widgets */
+.bg-hvmsYellow {
+  background-color: #fff89a; /* subtle pale yellow */
+}
+
+/* small helper for visually-hidden when needed */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0,0,0,0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+.leaflet-container {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0.75rem;
+  z-index: 0;
+}
+
+/* Compatibility fallbacks and vendor-prefixed properties */
+
+/* user-select: include standard + webkit + moz for broad support */
+.user-select-none {
+  -webkit-user-select: none; /* Safari 3+ */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE/Edge */
+  user-select: none;         /* Standard */
+}
+
+/* filter: include unprefixed and -webkit- for Chrome Android / Safari */
+.offline.inverted {
+  -webkit-filter: invert(100%);
+  filter: invert(100%);
+}
+
+/* text-size-adjust fallback */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* backdrop-filter fallback */
+.backdrop-blur {
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+/* image-set content compatibility helper (avoid -webkit-image-set in content; use normal image/background images) */
+.icon-image {
+  /* prefer background-image with srcset in HTML where needed */
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+/* forced-color-adjust / high contrast handling */
+.no-forced-color {
+  /* Prefer the unprefixed property, and provide a WebKit-prefixed fallback for Safari if supported. */
+  forced-color-adjust: none;
+  -webkit-forced-color-adjust: none;
+}
+/* user-drag fallback for WebKit */
+.draggable-disable {
+  -webkit-user-drag: none;
+}
+
+/* image-set helper: prefer standard image-set but include -webkit-image-set for older WebKit browsers
+   Use this helper by setting --icon-1x and --icon-2x variables where appropriate. Example:
+   .my-icon { --icon-1x: url('/img/foo.png'); --icon-2x: url('/img/foo@2x.png'); }
+*/
+.icon-image-set {
+  /* WebKit-prefixed first for older Safari/Chrome Android */
+  background-image: -webkit-image-set(var(--icon-1x) 1x, var(--icon-2x) 2x);
+  /* Standard syntax */
+  background-image: image-set(var(--icon-1x) 1x, var(--icon-2x) 2x);
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+/* Provide an explicit fallback for forced color / high-contrast environments where available */
+.forced-color-safe {
+  forced-color-adjust: none;
+  -webkit-forced-color-adjust: none;
+}
