@@ -70,9 +70,9 @@ const PORT = process.env.PORT || 5000;
 async function startServer() {
   try {
     await connectDB({ maxAttempts: 5, initialDelayMs: 1000 });
-      // Bind address: default to loopback for security when behind a reverse proxy
-      // Set HOST=0.0.0.0 when you explicitly want to expose the server directly.
-      const HOST = process.env.HOST || '127.0.0.1';
+      // Bind address: default to 0.0.0.0 so cloud hosts (Render) can detect the
+      // listening port. You can override with the HOST env var if needed.
+        const HOST = process.env.HOST || '0.0.0.0';
       const server = app.listen(PORT, HOST, () => {
         console.log("✅ MongoDB connected successfully");
         console.log(`🚀 Backend running and listening on ${HOST}:${PORT}`);
