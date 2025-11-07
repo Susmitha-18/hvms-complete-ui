@@ -18,6 +18,12 @@
          API root if it changes. -->
     <script>
       window.__HVMS_API_URL = "https://heavy-vehiclemanagementsystembackend.onrender.com/api";
+
+      // Temporary: skip map fetch on production to avoid errors
+      if (window.location.hostname.includes('onrender.com')) {
+        // skip map fetch
+        return;
+      }
     </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
