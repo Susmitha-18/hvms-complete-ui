@@ -18,6 +18,37 @@
          API root if it changes. -->
     <script>
       window.__HVMS_API_URL = "https://heavy-vehiclemanagementsystembackend.onrender.com/api";
+
+      // If running on Render (production), set a flag to skip map fetches that
+      // depend on geocoding and local endpoints. Avoid using `return` at the
+      // top-level in inline scripts (it causes a syntax error in browsers).
+      if (typeof window !== 'undefined' && window.location && window.location.hostname.includes('onrender.com')) {
+        window.__HVMS_SKIP_MAP_FETCH = true;
+      }
+      // Runtime fetch shim: if code calls fetch('/api/...') we rewrite it to the
+      // runtime API root so old built bundles and in-source fetch calls still
+      // work without a rebuild. Defensive and minimal.
+      (function installFetchShim(){
+        try {
+          var apiRoot = (typeof window !== 'undefined' && window.__HVMS_API_URL) ? String(window.__HVMS_API_URL).replace(/\/$/, '') : null;
+          if (!apiRoot) return;
+          var realFetch = window.fetch.bind(window);
+          window.fetch = function(input, init){
+            try {
+              if (typeof input === 'string' && input.indexOf('/api') === 0) {
+                input = apiRoot + input;
+              } else if (input && input.url && typeof input.url === 'string' && input.url.indexOf('/api') === 0) {
+                input = new Request(apiRoot + input.url, input);
+              }
+            } catch(e) {
+              // fall back to original fetch
+            }
+            return realFetch(input, init);
+          };
+        } catch(e) {
+          // ignore shim install failures
+        }
+      })();
     </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
