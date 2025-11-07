@@ -41,7 +41,24 @@ try {
 
 /* 🧠 Express setup */
 const app = express();
-app.use(cors());
+// Configure CORS explicitly so the frontend (deployed on a different origin)
+// can interact with the API. We allow the requesting origin and enable
+// credentials in case some endpoints later rely on cookies. This is safe for
+// early-stage apps; for production you can restrict `origin` to the exact
+// frontend host (e.g. https://your-frontend.onrender.com).
+const corsOptions = {
+  origin: (origin, callback) => {
+    // allow requests with no origin like curl/postman
+    if (!origin) return callback(null, true);
+    // Accept the origin; for stricter security replace this with a whitelist
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 
