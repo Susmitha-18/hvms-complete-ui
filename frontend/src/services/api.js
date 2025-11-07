@@ -54,6 +54,11 @@ axios.defaults.baseURL = API_ROOT || '';
 // with http) then prefix the path with the API_ROOT; otherwise keep the
 // relative path so it works with same-origin setups during development.
 const apiFetch = (path, options) => {
+  // If caller passed a full absolute URL, just use it as-is.
+  if (typeof path === 'string' && /^https?:\/\//i.test(path)) {
+    return fetch(path, options);
+  }
+
   const normalizedPath = path.startsWith('/') ? path : '/' + path;
   const useFull = /^https?:\/\//i.test(API_BASE);
   const url = useFull ? API_ROOT.replace(/\/$/, '') + normalizedPath : normalizedPath;
