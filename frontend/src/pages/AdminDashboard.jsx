@@ -1,6 +1,7 @@
 // frontend/src/pages/AdminDashboard.jsx
 import React, { useEffect, useState, useRef } from "react";
 import FreeMap from "../components/FreeMap"; // ✅ Import our map component
+import { apiFetch } from "../services/api";
 
 export default function AdminDashboard() {
   const [vehicles, setVehicles] = useState([]);
@@ -33,10 +34,18 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const load = async () => {
-      setLoading(true)
+      setLoading(true);
       try {
-  const res = await fetch("/api/vehicles/latest-locations");
-        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`)
+        // Respect runtime flag to skip map fetch on production if set by index.html
+        if (typeof window !== 'undefined' && window.__HVMS_SKIP_MAP_FETCH) {
+          setVehicles([]);
+          setFetchError('Map fetch skipped in production');
+          setLoading(false);
+          return;
+        }
+
+        const res = await apiFetch('/api/vehicles/latest-locations');
+        if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
         const data = await res.json();
         const list = data.vehicles || [];
         const out = [];
@@ -58,9 +67,9 @@ export default function AdminDashboard() {
         setFetchError(null)
       } catch (err) {
         console.error("❌ Error loading vehicles for admin map:", err);
-        setFetchError(String(err))
+        setFetchError(String(err));
       }
-      setLoading(false)
+      setLoading(false);
     };
     load();
   }, []);

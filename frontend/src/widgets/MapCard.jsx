@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { apiFetch } from "../services/api";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -25,7 +26,13 @@ export default function MapCard({ lastUpdatedText }) {
   useEffect(() => {
     const loadMapData = async () => {
       try {
-        const vRes = await fetch("/api/vehicles/latest-locations");
+        // If runtime asked to skip map fetch (production hotfix), do nothing
+        if (typeof window !== 'undefined' && window.__HVMS_SKIP_MAP_FETCH) {
+          setVehicles([]);
+          return;
+        }
+
+        const vRes = await apiFetch("/api/vehicles/latest-locations");
         const vData = await vRes.json();
         const list = vData.vehicles || [];
 
@@ -37,7 +44,7 @@ export default function MapCard({ lastUpdatedText }) {
             // try cache first
             if (!historyCache.current[vehicleId]) {
               try {
-                const hRes = await fetch(
+                const hRes = await apiFetch(
                   `/api/vehicles/history/${vehicleId}`
                 );
                 const hData = await hRes.json();
