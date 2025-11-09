@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { apiFetch } from "../services/api";
 
 export default function DriverProfile() {
   const navigate = useNavigate();
@@ -13,14 +14,12 @@ export default function DriverProfile() {
   useEffect(() => {
     const fetchDriver = async () => {
       try {
-  const res = await fetch(`/api/drivers/${driverId}`);
-        const data = await res.json();
-
-        if (res.ok) {
-          setDriver(data.driver);
-        } else {
-          console.error("Failed to fetch driver:", data.message);
-        }
+        if (!driverId) return;
+        const res = await apiFetch(`/api/drivers/${driverId}`);
+        const data = await res.json().catch(() => ({}));
+        console.info('[DriverProfile] fetch response:', res.status, data);
+        if (res.ok) setDriver(data.driver || null);
+        else console.error('Failed to fetch driver:', data && data.message);
       } catch (error) {
         console.error("Error fetching driver details:", error);
       } finally {

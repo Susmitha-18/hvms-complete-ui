@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../services/api";
 
 export default function AssignVehicle() {
   const navigate = useNavigate();
@@ -10,21 +11,28 @@ export default function AssignVehicle() {
 
   // ✅ Load all drivers and vehicles
   useEffect(() => {
-  fetch("/api/drivers")
-      .then((res) => res.json())
-      .then((data) => setDrivers(data.drivers || []))
-      .catch((err) => {
-        console.error("❌ Error loading drivers:", err);
+    const load = async () => {
+      try {
+        const dRes = await apiFetch('/api/drivers');
+        const dData = await dRes.json().catch(() => ({}));
+        console.info('[AssignVehicle] drivers response:', dRes.status, dData);
+        setDrivers(dData.drivers || []);
+      } catch (err) {
+        console.error('❌ Error loading drivers:', err);
         setDrivers([]);
-      });
+      }
 
-  fetch("/api/vehicles")
-      .then((res) => res.json())
-      .then((data) => setVehicles(data.vehicles || []))
-      .catch((err) => {
-        console.error("❌ Error loading vehicles:", err);
+      try {
+        const vRes = await apiFetch('/api/vehicles');
+        const vData = await vRes.json().catch(() => ({}));
+        console.info('[AssignVehicle] vehicles response:', vRes.status, vData);
+        setVehicles(vData.vehicles || []);
+      } catch (err) {
+        console.error('❌ Error loading vehicles:', err);
         setVehicles([]);
-      });
+      }
+    };
+    load();
   }, []);
 
   // ✅ Assign a vehicle to a driver
@@ -35,7 +43,7 @@ export default function AssignVehicle() {
     }
 
     try {
-      const res = await fetch(`/api/drivers/assign/${selectedDriver}`,
+      const res = await apiFetch(`/api/drivers/assign/${selectedDriver}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -81,7 +89,7 @@ export default function AssignVehicle() {
     }
 
     try {
-      const res = await fetch(`/api/drivers/unassign/${driverId}`,
+      const res = await apiFetch(`/api/drivers/unassign/${driverId}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

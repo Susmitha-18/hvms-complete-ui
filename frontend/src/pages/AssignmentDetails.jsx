@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { apiFetch } from "../services/api";
 
 export default function AssignmentDetails() {
   const navigate = useNavigate();
@@ -13,17 +14,20 @@ export default function AssignmentDetails() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const driverRes = await fetch(`/api/drivers/${driverId}`);
-        const driverData = await driverRes.json();
-        setDriver(driverData.driver);
+        if (!driverId) return;
+        const driverRes = await apiFetch(`/api/drivers/${driverId}`);
+        const driverData = await driverRes.json().catch(() => ({}));
+        console.info('[AssignmentDetails] driver response:', driverRes.status, driverData);
+        setDriver(driverData.driver || null);
 
         if (driverData.driver?.assignedVehicle) {
-          const vehicleRes = await fetch(`/api/vehicles`);
-          const vehiclesData = await vehicleRes.json();
-          const foundVehicle = vehiclesData.vehicles.find(
-            (v) => v._id === driverData.driver.assignedVehicle
+          const vehicleRes = await apiFetch(`/api/vehicles`);
+          const vehiclesData = await vehicleRes.json().catch(() => ({}));
+          console.info('[AssignmentDetails] vehicles response:', vehicleRes.status, vehiclesData);
+          const foundVehicle = (vehiclesData.vehicles || []).find(
+            (v) => String(v._id) === String(driverData.driver.assignedVehicle)
           );
-          setVehicle(foundVehicle);
+          setVehicle(foundVehicle || null);
         }
       } catch (err) {
         console.error("❌ Error loading assignment details:", err);
