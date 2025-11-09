@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export default function MaintenanceDetails() {
-  const query = new URLSearchParams(useLocation().search);
-  const vehicleId = query.get("id");
+  const { id: vehicleId } = useParams();
   const navigate = useNavigate();
+  const query = new URLSearchParams(useLocation().search);
 
   const [records, setRecords] = useState([]);
   const [vehicle, setVehicle] = useState(null);
@@ -215,6 +215,16 @@ const handleSave = async (record, index) => {
             ← Back
           </button>
         </div>
+      </div>
+
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl font-semibold">🛠 Vehicle Maintenance History</h3>
+        <button
+          onClick={() => navigate(`/maintenance/details?id=${vehicleId}`)}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          🔎 View Details
+        </button>
       </div>
 
       <table className="min-w-full border border-gray-200 text-sm bg-white rounded-xl shadow">

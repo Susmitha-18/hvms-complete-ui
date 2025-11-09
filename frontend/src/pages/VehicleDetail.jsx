@@ -589,6 +589,10 @@ function TrackingTab({ operations, setOperations }) {
    Maintenance Tab
    =========================== */
 function MaintenanceTab({ maintenanceRecords, setMaintenanceRecords }) {
+  // Get vehicleId from URL
+  const { id: vehicleId } = useParams();
+  const navigate = useNavigate();
+
   const [newRecord, setNewRecord] = useState({
     serviceType: "",
     serviceDate: "",
@@ -640,7 +644,15 @@ function MaintenanceTab({ maintenanceRecords, setMaintenanceRecords }) {
 
   return (
     <div className="mt-6 bg-gray-50 border rounded-lg p-6">
-      <h3 className="text-xl font-semibold mb-4">🛠 Vehicle Maintenance History</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xl font-semibold">🛠 Vehicle Maintenance History</h3>
+        <button
+          onClick={() => navigate(`/maintenance/details?id=${vehicleId}`)}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        >
+          🔎 View Details
+        </button>
+      </div>
 
       <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".pdf,.jpg,.jpeg,.png,.docx" />
 
