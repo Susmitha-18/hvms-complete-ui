@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../services/api";
 
 export default function AddVehicle() {
   const navigate = useNavigate();
@@ -29,13 +30,14 @@ export default function AddVehicle() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch("/api/vehicles", {
+      const res = await apiFetch("/api/vehicles", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      console.info('[AddVehicle] response:', res.status, data);
 
       if (res.ok) {
         alert("✅ Vehicle added successfully!");

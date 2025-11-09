@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../services/api";
 
 export default function AddDriver() {
   const navigate = useNavigate();
@@ -59,12 +60,13 @@ export default function AddDriver() {
       }
 
       // ✅ Send POST request
-      const res = await fetch("/api/drivers", {
+      const res = await apiFetch("/api/drivers", {
         method: "POST",
         body: formData,
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      console.info('[AddDriver] response:', res.status, data);
 
       if (res.ok) {
         alert("✅ Driver added successfully!");
