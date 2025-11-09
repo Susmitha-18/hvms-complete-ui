@@ -274,11 +274,42 @@ export default router;
 // ✅ Get all assignment history for a driver
 router.get("/history/:driverId", async (req, res) => {
   try {
-    const history = await DriverAssignmentHistory.find({
+    let history = await DriverAssignmentHistory.find({
       driverId: req.params.driverId,
     })
       .populate("vehicleId", "vehicleId name vehicleModel vehicleType")
-      .sort({ assignedAt: -1 });
+      .sort({ assignedAt: -1 })
+      .lean();
+
+    // Normalize records: when `vehicleId` didn't populate (possible if
+    // the stored value is a plain string or older inconsistent data), try
+    // to resolve the vehicle document manually so the frontend can show
+    // vehicle details reliably.
+    for (let i = 0; i < history.length; i++) {
+      const rec = history[i];
+
+      // If populate failed or vehicleId is a primitive/string, attempt lookup
+      if (!rec.vehicleId || typeof rec.vehicleId === "string") {
+        try {
+          // Try by ObjectId first
+          let vehicleDoc = null;
+          if (rec.vehicleId) {
+            vehicleDoc = await Vehicle.findById(rec.vehicleId).select("vehicleId name vehicleModel vehicleType").lean();
+          }
+          // If not found and rec.vehicleId is a vehicleId string, try that
+          if (!vehicleDoc && rec.vehicleId && typeof rec.vehicleId === "string") {
+            vehicleDoc = await Vehicle.findOne({ vehicleId: rec.vehicleId }).select("vehicleId name vehicleModel vehicleType").lean();
+          }
+
+          if (vehicleDoc) {
+            rec.vehicleId = vehicleDoc;
+          }
+        } catch (e) {
+          // ignore lookup errors; leave rec.vehicleId as-is
+          console.info("[driverRoutes] vehicle lookup failed for history record", rec._id, e && e.message);
+        }
+      }
+    }
 
     res.status(200).json({ history });
   } catch (err) {

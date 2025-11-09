@@ -40,18 +40,20 @@ export default function AssignmentDetails() {
   // ✅ Handle unassign
   const handleUnassign = async () => {
     try {
-      const res = await fetch(`/api/drivers/unassign/${driverId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ vehicleId: driver.assignedVehicle }),
-        }
-      );
+      const res = await apiFetch(`/api/drivers/unassign/${driverId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vehicleId: driver.assignedVehicle }),
+      });
+      const data = await res.json().catch(() => ({}));
+      console.info('[AssignmentDetails] unassign response:', res.status, data);
       if (res.ok) {
         alert("✅ Driver successfully unassigned!");
-        navigate("/drivers");
+        // Refresh the driver and history so UI updates immediately
+        // navigate back to drivers list after a short delay to allow UI refresh
+        setTimeout(() => navigate("/drivers"), 300);
       } else {
-        alert("❌ Failed to unassign!");
+        alert(`❌ Failed to unassign: ${data && data.message ? data.message : 'Unknown error'}`);
       }
     } catch (err) {
       console.error("⚠️ Unassign error:", err);
