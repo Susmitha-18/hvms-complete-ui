@@ -17,8 +17,9 @@ export default function EditVehicle() {
 
         // Fetch the single vehicle by id — more reliable than pulling the full list
         const res = await apiFetch(`/api/vehicles/${vehicleId}`);
-        const data = await res.json().catch(() => ({}));
-        if (data && data.vehicle) setForm(data.vehicle);
+  const data = await res.json().catch(() => ({}));
+  console.info('[VehicleProfile] fetch vehicle response:', data);
+  if (data && data.vehicle) setForm(data.vehicle);
       } catch (err) {
         console.error("❌ Error loading vehicle:", err);
       }

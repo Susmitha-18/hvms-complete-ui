@@ -14,10 +14,12 @@ export default function VehiclesPage() {
       try {
   // ✅ Load all vehicles
   const res = await axios.get("/api/vehicles");
+  console.info('[VehiclesPage] vehicles response:', res.data);
   setVehicles(res.data.vehicles || []);
 
   // ✅ Load all vehicle assignment history
   const hist = await axios.get("/api/vehicles/history");
+  console.info('[VehiclesPage] history response:', hist.data);
   setHistory(hist.data.history || []);
       } catch (err) {
         console.error("❌ Error loading vehicles or history:", err);

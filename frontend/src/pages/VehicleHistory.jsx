@@ -25,13 +25,15 @@ export default function VehicleHistory() {
 
         // ✅ Fetch vehicle details (use apiFetch so runtime API overrides are respected)
         const vRes = await apiFetch(`/api/vehicles/${vehicleId}`);
-        const vData = await vRes.json().catch(() => ({}));
-        setVehicle(vData.vehicle || null);
+  const vData = await vRes.json().catch(() => ({}));
+  console.info('[VehicleHistory] vehicle response:', vData);
+  setVehicle(vData.vehicle || null);
 
         // ✅ Fetch vehicle history
         const hRes = await apiFetch(`/api/vehicles/history/${vehicleId}`);
-        const hData = await hRes.json().catch(() => ({}));
-        setHistory(hData.history || []);
+  const hData = await hRes.json().catch(() => ({}));
+  console.info('[VehicleHistory] history response count:', (hData.history || []).length, hData);
+  setHistory(hData.history || []);
       } catch (err) {
         console.error("❌ Error loading vehicle history:", err);
         setVehicle(null);
