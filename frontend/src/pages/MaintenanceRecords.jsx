@@ -114,6 +114,58 @@ export default function MaintenanceRecords() {
           </div>
         )}
       </div>
+
+      {/* Vehicles List & Report Button */}
+      <div className="mt-6 bg-white p-6 rounded-xl shadow">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-800">Vehicle Maintenance</h2>
+          <div className="text-sm text-gray-500">{filteredVehicles.length} vehicles</div>
+        </div>
+
+        {filteredVehicles.length === 0 ? (
+          <div className="text-gray-500">No vehicles found.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-gray-200 text-sm">
+              <thead className="bg-gray-100 text-gray-700">
+                <tr>
+                  <th className="p-3 border text-left">Name</th>
+                  <th className="p-3 border text-left">Registration</th>
+                  <th className="p-3 border text-left">Model</th>
+                  <th className="p-3 border text-left">Status</th>
+                  <th className="p-3 border text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredVehicles.map((v) => (
+                  <tr key={v._id} className="border-t hover:bg-gray-50">
+                    <td className="p-3 border">{v.name || "—"}</td>
+                    <td className="p-3 border">{v.registrationNumber || "—"}</td>
+                    <td className="p-3 border">{v.vehicleModel || "—"}</td>
+                    <td className="p-3 border">{v.status || "—"}</td>
+                    <td className="p-3 border">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => navigate(`/maintenance/report?id=${v._id}`)}
+                          className="px-3 py-1 bg-blue-700 text-white rounded hover:bg-blue-800 text-sm"
+                        >
+                          ⬇️ Report
+                        </button>
+                        <button
+                          onClick={() => navigate(`/vehicle/${v._id}`)}
+                          className="px-3 py-1 border rounded hover:bg-gray-100 text-sm"
+                        >
+                          View
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

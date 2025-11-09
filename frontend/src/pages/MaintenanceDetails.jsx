@@ -129,7 +129,23 @@ const handleSave = async (record, index) => {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">🧰 Maintenance Details</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-gray-800">🧰 Maintenance Details</h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate(`/maintenance/report?id=${vehicleId}`)}
+            className="bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800"
+          >
+            ⬇️ View Report
+          </button>
+          <button
+            onClick={() => navigate(-1)}
+            className="border px-4 py-2 rounded-lg hover:bg-gray-100"
+          >
+            ← Back
+          </button>
+        </div>
+      </div>
 
       <table className="min-w-full border border-gray-200 text-sm bg-white rounded-xl shadow">
         <thead className="bg-gray-50 text-gray-700">
