@@ -22,25 +22,45 @@ export default function ScheduleMaintenance() {
       const all = JSON.parse(localStorage.getItem('hvms_maintenance_notes') || '{}')
       const entry = all[date]
       
-      // Only set initial state if we're not already editing
-      if (!editing) {
+      // In 'add' mode, always start with empty notes
+      if (incomingMode === 'add') {
+        setNotes('')
+        setSaved(false)
+      } else if (!editing) {
+        // In 'view' mode, load existing notes
         setNotes(entry?.notes || '')
         setSaved(!!entry)
       }
     } catch (e) {
       console.error('Failed to load notes:', e)
     }
-  }, [date]) // Only re-run if date changes
+  }, [date, incomingMode]) // Re-run if date or mode changes
 
   const handleSave = ()=>{
-    try{
+    try {
       const all = JSON.parse(localStorage.getItem('hvms_maintenance_notes') || '{}')
-      all[date] = { notes, updatedAt: new Date().toISOString() }
+      
+      // Check if there's an existing note for this date when in 'add' mode
+      if (incomingMode === 'add' && all[date]) {
+        if (!window.confirm(`A maintenance note already exists for ${date}. Do you want to create another note?`)) {
+          return
+        }
+        // Create a new key with timestamp to allow multiple notes per day
+        const timeKey = `${date}_${new Date().getTime()}`
+        all[timeKey] = { notes, updatedAt: new Date().toISOString() }
+      } else {
+        // Normal save for view/edit mode or new date
+        all[date] = { notes, updatedAt: new Date().toISOString() }
+      }
+      
       localStorage.setItem('hvms_maintenance_notes', JSON.stringify(all))
       setSaved(true)
       setEditing(false)
       alert('✅ Saved maintenance note for ' + date)
-    }catch(e){console.error(e); alert('❌ Save failed')}
+    } catch(e) {
+      console.error(e)
+      alert('❌ Save failed')
+    }
   }
 
   const handleEdit = () => {
