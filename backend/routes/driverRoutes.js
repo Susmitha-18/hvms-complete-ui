@@ -2,6 +2,7 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import mongoose from "mongoose";
 import Driver from "../models/Driver.js";
 import Vehicle from "../models/Vehicle.js";
 import DriverAssignmentHistory from "../models/DriverAssignmentHistory.js";
@@ -61,6 +62,14 @@ router.get("/", async (req, res) => {
 =========================== */
 router.get("/:id", async (req, res) => {
   try {
+    // Validate the id early to avoid casting errors when the route receives
+    // non-object-id segments (for example a request to /api/drivers/unassign
+    // which would otherwise be interpreted as an id). This prevents server
+    // errors and returns a friendly client response.
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({ message: "Invalid driver id" });
+    }
+
     const driver = await Driver.findById(req.params.id);
     if (!driver) return res.status(404).json({ message: "Driver not found" });
 
