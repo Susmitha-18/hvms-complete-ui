@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../services/api";
 
 export default function DriversPage() {
   const navigate = useNavigate();
@@ -9,8 +10,9 @@ export default function DriversPage() {
   useEffect(() => {
     const fetchDrivers = async () => {
       try {
-  const res = await fetch("/api/drivers");
-        const data = await res.json();
+        const res = await apiFetch("/api/drivers");
+        const data = await res.json().catch(() => ({}));
+        console.info('[DriversPage] drivers response:', data);
         const list = data.drivers || [];
         setDrivers(list);
       } catch (error) {
