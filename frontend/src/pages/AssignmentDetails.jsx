@@ -153,8 +153,13 @@ function AssignmentHistory({ driverId }) {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`/api/drivers/history/${driverId}`);
-        const data = await res.json();
+        if (!driverId) {
+          setHistory([]);
+          return;
+        }
+        const res = await apiFetch(`/api/drivers/history/${driverId}`);
+        const data = await res.json().catch(() => ({}));
+        console.info('[AssignmentDetails] history response:', res.status, data);
         setHistory(data.history || []);
       } catch (err) {
         console.error("Error loading history:", err);
