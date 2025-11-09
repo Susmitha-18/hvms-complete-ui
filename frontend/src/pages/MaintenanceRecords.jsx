@@ -152,10 +152,10 @@ export default function MaintenanceRecords() {
                           ⬇️ Report
                         </button>
                         <button
-                          onClick={() => navigate(`/vehicle/${v._id}`)}
+                          onClick={() => navigate(`/maintenance/details?id=${v._id}`)}
                           className="px-3 py-1 border rounded hover:bg-gray-100 text-sm"
                         >
-                          View
+                          Details
                         </button>
                       </div>
                     </td>
