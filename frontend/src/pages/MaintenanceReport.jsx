@@ -7,6 +7,7 @@ import autoTable from "jspdf-autotable";
 export default function MaintenanceReport() {
     const query = new URLSearchParams(useLocation().search);
     const vehicleId = query.get("id");
+    const recordId = query.get("record");
     const navigate = useNavigate();
 
     const [vehicle, setVehicle] = useState(null);
@@ -21,13 +22,17 @@ export default function MaintenanceReport() {
                 const vehicleData = vehicleRes.data.vehicles.find((v) => v._id === vehicleId);
                 setVehicle(vehicleData);
 
-                const recordRes = await axios.get(`/api/maintenance/${vehicleId}`);
-                setRecords(recordRes.data.records || []);
+                                const recordRes = await axios.get(`/api/maintenance/${vehicleId}`);
+                                let fetched = recordRes.data.records || [];
+                                if (recordId) {
+                                    fetched = fetched.filter((r) => String(r._id) === String(recordId));
+                                }
+                                setRecords(fetched);
 
-                const total = recordRes.data.records.reduce(
-                    (sum, rec) => sum + (Number(rec.totalCost) || 0),
-                    0
-                );
+                                const total = fetched.reduce(
+                                        (sum, rec) => sum + (Number(rec.totalCost) || 0),
+                                        0
+                                );
                 setTotalCost(total);
             } catch (err) {
                 console.error("❌ Error fetching report data:", err);

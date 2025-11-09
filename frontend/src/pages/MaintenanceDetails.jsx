@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 export default function MaintenanceDetails() {
   const query = new URLSearchParams(useLocation().search);
@@ -8,12 +10,20 @@ export default function MaintenanceDetails() {
   const navigate = useNavigate();
 
   const [records, setRecords] = useState([]);
+  const [vehicle, setVehicle] = useState(null);
 
   useEffect(() => {
     const fetchRecords = async () => {
       try {
-  const res = await axios.get(`/api/maintenance/${vehicleId}`);
-        const data = (res.data.records || []).map((r) => ({
+        const [recordRes, vehicleRes] = await Promise.all([
+          axios.get(`/api/maintenance/${vehicleId}`),
+          axios.get(`/api/vehicles`),
+        ]);
+
+        const vehicleData = (vehicleRes.data.vehicles || []).find((v) => v._id === vehicleId) || null;
+        setVehicle(vehicleData);
+
+        const data = (recordRes.data.records || []).map((r) => ({
           ...r,
           isEditing: false, // track edit mode per row
           isNew: false,
@@ -125,6 +135,61 @@ const handleSave = async (record, index) => {
     const updated = [...records];
     updated[index].isEditing = !updated[index].isEditing;
     setRecords(updated);
+  };
+
+  /* ✅ Export single record as PDF */
+  const exportRecordPDF = (rec) => {
+    try {
+      const doc = new jsPDF("p", "mm", "a4");
+      const formatRupee = (val) => `Rs. ${val || 0}`;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("Heavy Vehicle Management System", 14, 18);
+
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      doc.text("Maintenance Record Report", 14, 28);
+      doc.setFontSize(9);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 14, 34);
+
+      let startY = 44;
+      doc.setFontSize(11);
+      if (vehicle) {
+        const info = [
+          `Vehicle Name: ${vehicle.name || "N/A"}`,
+          `Model: ${vehicle.vehicleModel || "N/A"}`,
+          `Registration Number: ${vehicle.registrationNumber || "N/A"}`,
+        ];
+        info.forEach((line, i) => doc.text(line, 14, startY + i * 6));
+        startY += info.length * 6 + 4;
+      }
+
+      const rows = [
+        ["Service Type", rec.serviceType || "—"],
+        ["Replaced Parts", rec.replacedParts || "—"],
+        ["Total Cost", formatRupee(rec.totalCost)],
+        ["Service Date", rec.serviceDate ? rec.serviceDate.split("T")[0] : "—"],
+        ["Start Date", rec.startDate ? rec.startDate.split("T")[0] : "—"],
+        ["End Date", rec.endDate ? rec.endDate.split("T")[0] : "—"],
+        ["Remarks", rec.description || rec.remarks || "—"],
+      ];
+
+      autoTable(doc, {
+        startY,
+        head: [["Field", "Value"]],
+        body: rows,
+        theme: "grid",
+        headStyles: { fillColor: [40, 89, 215], textColor: 255 },
+        styles: { font: "helvetica", fontSize: 10 },
+      });
+
+      const filename = `${vehicle?.name || "Vehicle"}_maintenance_${rec._id}.pdf`;
+      doc.save(filename);
+    } catch (err) {
+      console.error("PDF export error:", err);
+      alert("Failed to export record. See console.");
+    }
   };
 
   return (
@@ -286,12 +351,26 @@ const handleSave = async (record, index) => {
                     Save
                   </button>
                 ) : (
-                  <button
-                    onClick={() => handleEditToggle(index)}
-                    className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                  >
-                    Edit
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEditToggle(index)}
+                      className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => navigate(`/maintenance/report?id=${vehicleId}&record=${rec._id}`)}
+                      className="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300"
+                    >
+                      View Report
+                    </button>
+                    <button
+                      onClick={() => exportRecordPDF(rec)}
+                      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+                    >
+                      Export Report
+                    </button>
+                  </div>
                 )}
               </td>
             </tr>
