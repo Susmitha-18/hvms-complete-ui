@@ -230,10 +230,22 @@ router.put("/unassign/:id", async (req, res) => {
       return res.status(404).json({ message: "Driver not found" });
 
     // ✅ Update history before clearing driver’s assigned vehicle
-    await DriverAssignmentHistory.findOneAndUpdate(
+    // Try to close the active history record for this driver+vehicle.
+    // In some older records `vehicleId` may be stored differently (string vs ObjectId)
+    // so attempt a best-effort update. If the specific record isn't found,
+    // fall back to closing the latest active record for the driver.
+    let updated = await DriverAssignmentHistory.findOneAndUpdate(
       { driverId: driver._id, vehicleId, status: "Active" },
       { status: "Completed", unassignedAt: new Date() }
     );
+
+    if (!updated) {
+      console.info("[driverRoutes] Exact history record not found, falling back to latest active record for driver", driver._id);
+      updated = await DriverAssignmentHistory.findOneAndUpdate(
+        { driverId: driver._id, status: "Active" },
+        { status: "Completed", unassignedAt: new Date() }
+      );
+    }
 
     // ✅ Reset driver’s status
     driver.assignedVehicle = "";
