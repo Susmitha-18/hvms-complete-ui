@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { apiFetch } from "../services/api";
 
 import MapCard from "../widgets/MapCard";
 
@@ -16,17 +17,25 @@ export default function VehicleHistory() {
   useEffect(() => {
     const loadData = async () => {
       try {
-  // ✅ Fetch vehicle details
-  const vRes = await fetch(`/api/vehicles/${vehicleId}`);
-        const vData = await vRes.json();
-        setVehicle(vData.vehicle);
+        if (!vehicleId) {
+          setVehicle(null);
+          setHistory([]);
+          return;
+        }
+
+        // ✅ Fetch vehicle details (use apiFetch so runtime API overrides are respected)
+        const vRes = await apiFetch(`/api/vehicles/${vehicleId}`);
+        const vData = await vRes.json().catch(() => ({}));
+        setVehicle(vData.vehicle || null);
 
         // ✅ Fetch vehicle history
-  const hRes = await fetch(`/api/vehicles/history/${vehicleId}`);
-        const hData = await hRes.json();
+        const hRes = await apiFetch(`/api/vehicles/history/${vehicleId}`);
+        const hData = await hRes.json().catch(() => ({}));
         setHistory(hData.history || []);
       } catch (err) {
         console.error("❌ Error loading vehicle history:", err);
+        setVehicle(null);
+        setHistory([]);
       }
     };
     loadData();
@@ -68,7 +77,13 @@ export default function VehicleHistory() {
     }
   };
 
-  if (!vehicle) return <div className="p-8 text-gray-500">Loading vehicle history...</div>;
+  if (!vehicle) {
+    return (
+      <div className="p-8 text-gray-500">
+        {vehicleId ? "Loading vehicle history..." : "No vehicle selected. Please open this page with a vehicle id."}
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto p-8 bg-white shadow rounded-xl mt-6 mb-12">

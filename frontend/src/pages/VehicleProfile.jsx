@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { apiFetch } from "../services/api";
 
 export default function EditVehicle() {
   const navigate = useNavigate();
@@ -12,10 +13,12 @@ export default function EditVehicle() {
   useEffect(() => {
     const loadVehicle = async () => {
       try {
-        const res = await fetch(`/api/vehicles`);
-        const data = await res.json();
-        const found = data.vehicles.find((v) => v._id === vehicleId);
-        if (found) setForm(found);
+        if (!vehicleId) return;
+
+        // Fetch the single vehicle by id — more reliable than pulling the full list
+        const res = await apiFetch(`/api/vehicles/${vehicleId}`);
+        const data = await res.json().catch(() => ({}));
+        if (data && data.vehicle) setForm(data.vehicle);
       } catch (err) {
         console.error("❌ Error loading vehicle:", err);
       }
@@ -23,7 +26,7 @@ export default function EditVehicle() {
     loadVehicle();
   }, [vehicleId]);
 
-  if (!form) return <div className="p-6 text-center">Loading vehicle details...</div>;
+  if (!form) return <div className="p-6 text-center">{vehicleId ? 'Loading vehicle details...' : 'No vehicle selected.'}</div>;
 
   // Handle input changes
   const handleChange = (e) => {
