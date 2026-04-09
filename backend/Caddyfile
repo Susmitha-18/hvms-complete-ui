@@ -1,0 +1,8 @@
+:5173 {
+    root * D:\hvms-complete-ui\frontend\dist
+    file_server
+
+    route /api/* {
+        reverse_proxy http://localhost:5000
+    }
+}
