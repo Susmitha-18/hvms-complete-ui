@@ -32,7 +32,9 @@ const seed = async () => {
 
     // Vehicles
     const vehiclesCount = await Vehicle.countDocuments()
-    if (vehiclesCount === 0) {
+    if (vehiclesCount <= 1) {
+      if (vehiclesCount === 1) await Vehicle.deleteMany({}); // clean up the broken first record
+      
       const mapStatus = s => {
         if (!s) return 'Free'
         const low = String(s).toLowerCase()
@@ -42,7 +44,9 @@ const seed = async () => {
         return 'Free'
       }
       const vehicles = sampleData.vehiclesList.map(v => ({ name: v.model || v.id, registrationNumber: v.id, status: mapStatus(v.status) }))
-      await Vehicle.insertMany(vehicles)
+      for (const v of vehicles) {
+        await Vehicle.create(v).catch(e => console.error('Skipped a duplicate vehicle'));
+      }
       console.log('Seeded vehicles')
     } else {
       console.log('Vehicles collection already has data — skipping vehicles seeding')
@@ -52,7 +56,9 @@ const seed = async () => {
     const clientsCount = await Client.countDocuments()
     if (clientsCount === 0) {
       const clients = sampleData.clientsList.map(c => ({ name: c.name, location: c.region || '', contact: c.contactName || '' }))
-      await Client.insertMany(clients)
+      for (const c of clients) {
+        await Client.create(c).catch(e => {});
+      }
       console.log('Seeded clients')
     } else {
       console.log('Clients collection already has data — skipping clients seeding')
@@ -62,7 +68,9 @@ const seed = async () => {
     const salaryCount = await Salary.countDocuments()
     if (salaryCount === 0) {
       const salaries = sampleData.salaryList.map(s => ({ workerId: null, month: s.month, amount: s.base || 0, allowances: s.overtime || 0, deductions: 0 }))
-      await Salary.insertMany(salaries)
+      for (const s of salaries) {
+         await Salary.create(s).catch(e => {});
+      }
       console.log('Seeded salaries')
     } else {
       console.log('Salary collection already has data — skipping salaries seeding')
