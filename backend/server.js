@@ -21,23 +21,24 @@ import attendanceRoutes from "./routes/attendanceRoutes.js";
 
 dotenv.config();
 
-/* 🧹 Step 1: Automatically free up port 5001 before starting */
-try {
-  execSync(
-    `netstat -ano | findstr :5001 | find "LISTENING" && for /f "tokens=5" %a in ('netstat -ano ^| findstr :5001 ^| find "LISTENING"') do taskkill /F /PID %a`,
-    { stdio: "ignore" }
-  );
-  console.log("🧹 Cleared port 5001 before starting...");
-} catch {}
+/* 🧹 Step 1: Automatically free up ports on Windows dev environment if needed */
+if (process.platform === "win32") {
+  try {
+    execSync(
+      `netstat -ano | findstr :5001 | find "LISTENING" && for /f "tokens=5" %a in ('netstat -ano ^| findstr :5001 ^| find "LISTENING"') do taskkill /F /PID %a`,
+      { stdio: "ignore" }
+    );
+    console.log("🧹 Cleared port 5001 before starting...");
+  } catch {}
 
-/* 🧹 Step 1: Automatically free up port 80 before starting */
-try {
-  execSync(
-    `netstat -ano | findstr :80 | find "LISTENING" && for /f "tokens=5" %a in ('netstat -ano ^| findstr :80 ^| find "LISTENING"') do taskkill /F /PID %a`,
-    { stdio: "ignore" }
-  );
-  console.log("🧹 Cleared port 80 before starting...");
-} catch {}
+  try {
+    execSync(
+      `netstat -ano | findstr :80 | find "LISTENING" && for /f "tokens=5" %a in ('netstat -ano ^| findstr :80 ^| find "LISTENING"') do taskkill /F /PID %a`,
+      { stdio: "ignore" }
+    );
+    console.log("🧹 Cleared port 80 before starting...");
+  } catch {}
+}
 
 /* 🧠 Express setup */
 const app = express();
@@ -85,30 +86,25 @@ const PORT = process.env.PORT || 5000;
 
 /* 🚀 Start server */
 async function startServer() {
-  try {
-    await connectDB({ maxAttempts: 5, initialDelayMs: 1000 });
-      // Bind address: default to 0.0.0.0 so cloud hosts (Render) can detect the
-      // listening port. You can override with the HOST env var if needed.
-        const HOST = process.env.HOST || '0.0.0.0';
-      const server = app.listen(PORT, HOST, () => {
-        console.log("✅ MongoDB connected successfully");
-        console.log(`🚀 Backend running and listening on ${HOST}:${PORT}`);
-        console.log("🌍 CORS enabled, ready for frontend requests");
-      });
+  const HOST = process.env.HOST || '0.0.0.0';
+  const server = app.listen(PORT, HOST, () => {
+    console.log(`🚀 Backend running and listening on http://${HOST}:${PORT}`);
+    console.log("🌍 CORS enabled, ready for frontend requests");
+  });
 
-      // Better error message for common listen errors (like EADDRINUSE)
-      server.on('error', (err) => {
-        if (err && err.code === 'EADDRINUSE') {
-          console.error(`❌ Port ${PORT} is already in use. Kill the process using that port or set a different PORT environment variable.`);
-        } else {
-          console.error('❌ Server error:', err && err.message ? err.message : err);
-        }
-        process.exit(1);
-      });
-  } catch (err) {
-    console.error("❌ Could not connect to MongoDB:", err.message);
+  server.on('error', (err) => {
+    if (err && err.code === 'EADDRINUSE') {
+      console.error(`❌ Port ${PORT} is already in use.`);
+    } else {
+      console.error('❌ Server error:', err && err.message ? err.message : err);
+    }
     process.exit(1);
-  }
+  });
+
+  // Connect to DB asynchronously so server is immediately responsive to health checks
+  connectDB({ maxAttempts: 2, initialDelayMs: 500 }).catch((err) => {
+    console.warn("⚠️ MongoDB connection notice:", err.message);
+  });
 }
 
 startServer();

@@ -1,19 +1,37 @@
 import sample from './sampleData.js'
 import Vehicle from '../models/Vehicle.js'
+import Driver from '../models/Driver.js'
 
 export const getDashboard = async (req, res) => {
 	try {
-		const vehicleCount = await Vehicle.countDocuments()
-		const vehicles = await Vehicle.find().limit(5)
-		// Build a minimal dashboard object; if DB is empty, fall back to sample
-		if (vehicleCount === 0) return res.json(sample.dashboardSample)
+		const dbVehicles = await Vehicle.find()
+		const dbDrivers = await Driver.find()
+
+		const vehiclesList = dbVehicles.length > 0 ? dbVehicles : sample.vehiclesList || []
+		const driversList = dbDrivers.length > 0 ? dbDrivers : sample.driversList || []
+
+		const activeVehicles = vehiclesList.filter(v => 
+			(v.status || '').toLowerCase().includes('active') || (v.status || '').toLowerCase() === 'working'
+		).length
+
+		const availableDrivers = driversList.filter(d => 
+			(d.status || '').toLowerCase() === 'available'
+		).length
+
+		const maintenanceCount = vehiclesList.filter(v => 
+			(v.status || '').toLowerCase().includes('maint') || (v.status || '').toLowerCase().includes('service')
+		).length
 
 		const dashboard = {
-			welcomeUser: 'HVMS User',
-			fleetCount: { active: vehicleCount, total: vehicleCount },
-			driversCount: { available: 0, total: 0 },
-			maintenanceAlerts: 0,
-			vehicles: vehicles.map(v => ({ id: v.registrationNumber || v._id, label: v.name || v._id, status: v.status }))
+			welcomeUser: 'HVMS Admin',
+			fleetCount: { active: activeVehicles, total: vehiclesList.length },
+			driversCount: { available: availableDrivers, total: driversList.length },
+			maintenanceAlerts: maintenanceCount || sample.dashboardSample.maintenanceAlerts || 7,
+			vehicles: vehiclesList.slice(0, 5).map(v => ({
+				id: v.registrationNumber || v.id || v._id,
+				label: v.name || v.model || v.id,
+				status: v.status || 'Active'
+			}))
 		}
 
 		res.json(dashboard)

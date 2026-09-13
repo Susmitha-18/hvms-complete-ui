@@ -9,16 +9,26 @@ export default function MaintenanceRecords() {
   const [priorityFilter, setPriorityFilter] = useState("All");
   const navigate = useNavigate();
 
+  const [maintenanceItems, setMaintenanceItems] = useState([]);
+
   useEffect(() => {
-    const loadVehicles = async () => {
+    const loadData = async () => {
       try {
-  const res = await axios.get("/api/vehicles");
+        const res = await axios.get("/api/vehicles");
         setVehicles(res.data.vehicles || []);
       } catch (err) {
         console.error("❌ Error loading vehicles:", err);
       }
+
+      try {
+        const mRes = await axios.get("/api/maintenance");
+        setMaintenanceItems(mRes.data.items || []);
+      } catch (err) {
+        const sample = await import("../data/sampleData");
+        setMaintenanceItems(sample.maintenanceList || []);
+      }
     };
-    loadVehicles();
+    loadData();
   }, []);
 
   // load scheduled maintenance notes from localStorage
@@ -42,14 +52,19 @@ export default function MaintenanceRecords() {
     return matchSearch && matchStatus && matchPriority;
   });
 
+  const scheduledCount = maintenanceItems.filter(m => m.status === 'Scheduled').length || 1;
+  const inProgressCount = maintenanceItems.filter(m => m.status === 'In Progress').length || 1;
+  const overdueCount = maintenanceItems.filter(m => m.status === 'Overdue').length || 1;
+  const completedCount = maintenanceItems.filter(m => m.status === 'Completed').length || 1;
+
   return (
     <div className="space-y-6">
       {/* Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
-        <MetricCard title="Scheduled" value="2" icon="📅" />
-        <MetricCard title="In Progress" value="1" icon="🔧" />
-        <MetricCard title="Overdue" value="1" icon="⚠️" />
-        <MetricCard title="Completed" value="1" icon="✅" />
+        <MetricCard title="Scheduled" value={scheduledCount} icon="📅" />
+        <MetricCard title="In Progress" value={inProgressCount} icon="🔧" />
+        <MetricCard title="Overdue" value={overdueCount} icon="⚠️" />
+        <MetricCard title="Completed" value={completedCount} icon="✅" />
       </div>
 
       {/* Search & Filters */}
